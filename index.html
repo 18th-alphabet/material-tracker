@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Material Tracker</title>
+    <!-- Bootstrap 5 CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@latest/dist/xlsx.full.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#"><strong>Material Tracker</strong></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#dashboard">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#income">Income</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#outgoing">Outgoing</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#handover">Handover</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#export">Export</a></li>
+                    <li class="nav-item">
+                        <button class="btn theme-toggle" id="themeToggle" title="Toggle Dark/Light Theme">
+                            <i class="bi bi-moon-stars-fill"></i>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="mb-5">
+            <div class="row">
+                <div class="col-12">
+                    <h2 class="mb-4"><i class="bi bi-graph-up"></i> Dashboard</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Income</h5>
+                            <p class="card-text display-6 text-success">$0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Outgoing</h5>
+                            <p class="card-text display-6 text-danger">$0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Balance</h5>
+                            <p class="card-text display-6 text-primary">$0</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h5 class="card-title">Pending Handover</h5>
+                            <p class="card-text display-6 text-warning">0</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <canvas id="incomeChart" height="80"></canvas>
+                </div>
+                <div class="col-md-6">
+                    <canvas id="outgoingChart" height="80"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- Income Section -->
+        <section id="income" class="mb-5">
+            <h2 class="mb-4"><i class="bi bi-plus-circle"></i> Income</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5>Add Income</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="incomeForm">
+                                <div class="mb-3">
+                                    <label for="incomeDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="incomeDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="incomeAmount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="incomeAmount" placeholder="0.00" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="incomeDescription" class="form-label">Description</label>
+                                    <input type="text" class="form-control" id="incomeDescription" placeholder="Enter description">
+                                </div>
+                                <button type="submit" class="btn btn-success w-100">Add Income</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <h5>Income Records</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-muted text-center">No records yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- Outgoing Section -->
+        <section id="outgoing" class="mb-5">
+            <h2 class="mb-4"><i class="bi bi-minus-circle"></i> Outgoing</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5>Add Outgoing</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="outgoingForm">
+                                <div class="mb-3">
+                                    <label for="outgoingDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="outgoingDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="outgoingAmount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="outgoingAmount" placeholder="0.00" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="outgoingDescription" class="form-label">Description</label>
+                                    <input type="text" class="form-control" id="outgoingDescription" placeholder="Enter description">
+                                </div>
+                                <button type="submit" class="btn btn-danger w-100">Add Outgoing</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-danger text-white">
+                            <h5>Outgoing Records</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Description</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="4" class="text-muted text-center">No records yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- Handover Section -->
+        <section id="handover" class="mb-5">
+            <h2 class="mb-4"><i class="bi bi-arrow-left-right"></i> Handover</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5>Create Handover</h5>
+                        </div>
+                        <div class="card-body">
+                            <form id="handoverForm">
+                                <div class="mb-3">
+                                    <label for="handoverDate" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="handoverDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="handoverAmount" class="form-label">Amount</label>
+                                    <input type="number" class="form-control" id="handoverAmount" placeholder="0.00" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="handoverRecipient" class="form-label">Recipient</label>
+                                    <input type="text" class="form-control" id="handoverRecipient" placeholder="Enter recipient name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="handoverNotes" class="form-label">Notes</label>
+                                    <textarea class="form-control" id="handoverNotes" rows="2" placeholder="Enter notes"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-info w-100">Create Handover</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-info text-white">
+                            <h5>Handover Records</h5>
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Recipient</th>
+                                        <th>Status</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="5" class="text-muted text-center">No records yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <hr>
+
+        <!-- Export Section -->
+        <section id="export" class="mb-5">
+            <h2 class="mb-4"><i class="bi bi-download"></i> Export</h2>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header bg-secondary text-white">
+                            <h5>Export Data</h5>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted">Export your tracking data to Excel format for archival or analysis.</p>
+                            <div class="d-flex gap-2">
+                                <button id="exportExcel" class="btn btn-success">
+                                    <i class="bi bi-file-earmark-spreadsheet"></i> Export to Excel
+                                </button>
+                                <button id="exportPdf" class="btn btn-danger">
+                                    <i class="bi bi-file-earmark-pdf"></i> Export to PDF
+                                </button>
+                                <button id="exportCsv" class="btn btn-warning">
+                                    <i class="bi bi-file-earmark-text"></i> Export to CSV
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <footer class="bg-dark text-white text-center py-3 mt-5">
+        <p>&copy; 2026 Material Tracker. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
