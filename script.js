@@ -11,6 +11,28 @@ let editingId = null;
 let editingType = null;
 let currentTheme = localStorage.getItem('theme') || 'light';
 
+const TRANSACTION_EXPORT_COLUMNS = [
+    { header: 'No', width: 5, align: 'center', value: (record, index) => index + 1 },
+    { header: 'Material Name', width: 24, align: 'left', value: record => record.materialName || '' },
+    { header: 'Qty', width: 8, align: 'center', value: record => record.qty || 0 },
+    { header: 'Serial No', width: 16, align: 'center', value: record => record.serialNo || '' },
+    { header: 'Amount', width: 12, align: 'right', value: record => record.amount || 0 },
+    { header: 'Date', width: 16, align: 'center', value: record => formatExportDate(record.date) },
+    { header: 'Comments', width: 28, align: 'left', value: record => record.comments || '' }
+];
+
+const HANDOVER_EXPORT_COLUMNS = [
+    { header: 'No', width: 5, align: 'center', value: (record, index) => index + 1 },
+    { header: 'Material Name', width: 24, align: 'left', value: record => record.materialName || '' },
+    { header: 'Qty', width: 8, align: 'center', value: record => record.qty || 0 },
+    { header: 'Serial No', width: 16, align: 'center', value: record => record.serialNo || '' },
+    { header: 'Handover Person', width: 20, align: 'left', value: record => record.handoverPerson || '' },
+    { header: 'Handover By', width: 18, align: 'left', value: record => record.handoverBy || '' },
+    { header: 'Handover Date', width: 16, align: 'center', value: record => formatExportDate(record.date) },
+    { header: 'Handover Details', width: 28, align: 'left', value: record => record.handoverDetails || '' },
+    { header: 'Comments', width: 28, align: 'left', value: record => record.comments || '' }
+];
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Material Tracker loaded');
@@ -624,109 +646,38 @@ function exportToExcel() {
         }
         
         const workbook = XLSX.utils.book_new();
-        
-        // ============================================
-        // INCOME SHEET
-        // ============================================
-        const incomeData = trackerData.income.map(record => ({
-            'Date': new Date(record.date).toLocaleDateString(),
-            'Amount': record.amount,
-            'Description': record.description || ''
-        }));
-        
-        if (incomeData.length === 0) {
-            incomeData.push({
-                'Date': '',
-                'Amount': 0,
-                'Description': 'No records'
+
+        getExportSections().forEach(section => {
+            const rows = buildExportRows(section.records, section.columns);
+            const worksheet = XLSX.utils.json_to_sheet(rows, {
+                header: section.columns.map(column => column.header)
             });
-        }
-        
-        const incomeWorksheet = XLSX.utils.json_to_sheet(incomeData);
-        incomeWorksheet['!cols'] = [
-            { wch: 15 },  // Date width
-            { wch: 12 },  // Amount width
-            { wch: 30 }   // Description width
-        ];
-        XLSX.utils.book_append_sheet(workbook, incomeWorksheet, 'Income');
-        
-        // ============================================
-        // OUTGOING SHEET
-        // ============================================
-        const outgoingData = trackerData.outgoing.map(record => ({
-            'Date': new Date(record.date).toLocaleDateString(),
-            'Amount': record.amount,
-            'Description': record.description || ''
-        }));
-        
-        if (outgoingData.length === 0) {
-            outgoingData.push({
-                'Date': '',
-                'Amount': 0,
-                'Description': 'No records'
-            });
-        }
-        
-        const outgoingWorksheet = XLSX.utils.json_to_sheet(outgoingData);
-        outgoingWorksheet['!cols'] = [
-            { wch: 15 },  // Date width
-            { wch: 12 },  // Amount width
-            { wch: 30 }   // Description width
-        ];
-        XLSX.utils.book_append_sheet(workbook, outgoingWorksheet, 'Outgoing');
-        
-        // ============================================
-        // HANDOVER SHEET
-        // ============================================
-        const handoverData = trackerData.handover.map(record => ({
-            'Date': new Date(record.date).toLocaleDateString(),
-            'Amount': record.amount,
-            'Recipient': record.recipient,
-            'Notes': record.notes || '',
-            'Status': record.status
-        }));
-        
-        if (handoverData.length === 0) {
-            handoverData.push({
-                'Date': '',
-                'Amount': 0,
-                'Recipient': '',
-                'Notes': 'No records',
-                'Status': ''
-            });
-        }
-        
-        const handoverWorksheet = XLSX.utils.json_to_sheet(handoverData);
-        handoverWorksheet['!cols'] = [
-            { wch: 15 },  // Date width
-            { wch: 12 },  // Amount width
-            { wch: 20 },  // Recipient width
-            { wch: 30 },  // Notes width
-            { wch: 12 }   // Status width
-        ];
-        XLSX.utils.book_append_sheet(workbook, handoverWorksheet, 'Handover');
+            applyExcelLayout(worksheet, rows.length, section.columns);
+            XLSX.utils.book_append_sheet(workbook, worksheet, section.name);
+        });
         
         // ============================================
         // SUMMARY SHEET
         // ============================================
-        const totalIncome = trackerData.income.reduce((sum, r) => sum + r.amount, 0);
-        const totalOutgoing = trackerData.outgoing.reduce((sum, r) => sum + r.amount, 0);
+        const totalIncome = trackerData.income.reduce((sum, r) => sum + (r.amount || 0), 0);
+        const totalOutgoing = trackerData.outgoing.reduce((sum, r) => sum + (r.amount || 0), 0);
         const balance = totalIncome - totalOutgoing;
-        const pendingHandover = trackerData.handover.filter(h => h.status === 'Pending').length;
         
         const summaryData = [
             { 'Metric': 'Total Income', 'Value': totalIncome },
             { 'Metric': 'Total Outgoing', 'Value': totalOutgoing },
             { 'Metric': 'Balance', 'Value': balance },
-            { 'Metric': 'Pending Handovers', 'Value': pendingHandover },
-            { 'Metric': 'Total Records', 'Value': trackerData.income.length + trackerData.outgoing.length + trackerData.handover.length }
+            { 'Metric': 'Income Records', 'Value': trackerData.income.length },
+            { 'Metric': 'Outgoing Records', 'Value': trackerData.outgoing.length },
+            { 'Metric': 'Handover Records', 'Value': trackerData.handover.length }
         ];
         
         const summaryWorksheet = XLSX.utils.json_to_sheet(summaryData);
         summaryWorksheet['!cols'] = [
-            { wch: 20 },  // Metric width
-            { wch: 15 }   // Value width
+            { wch: 20 },   // Metric
+            { wch: 15 }    // Value
         ];
+        styleExcelWorksheet(summaryWorksheet, summaryData.length + 1, 'Summary');
         XLSX.utils.book_append_sheet(workbook, summaryWorksheet, 'Summary');
         
         // ============================================
@@ -734,46 +685,277 @@ function exportToExcel() {
         // ============================================
         const filename = `material-tracker-${new Date().toISOString().slice(0, 10)}.xlsx`;
         XLSX.writeFile(workbook, filename);
-        alert('Excel file exported successfully: ' + filename);
+        console.log('Excel file exported successfully:', filename);
     } catch (error) {
         console.error('Error exporting to Excel:', error);
         alert('Error exporting to Excel: ' + error.message);
     }
 }
 
-// Export to PDF (basic implementation)
+function getExportSections() {
+    return [
+        { name: 'Income', records: trackerData.income, columns: TRANSACTION_EXPORT_COLUMNS },
+        { name: 'Outgoing', records: trackerData.outgoing, columns: TRANSACTION_EXPORT_COLUMNS },
+        { name: 'Handover', records: trackerData.handover, columns: HANDOVER_EXPORT_COLUMNS }
+    ];
+}
+
+function buildExportRows(records, columns) {
+    if (!records.length) {
+        return [columns.reduce((row, column, index) => {
+            row[column.header] = index === 1 ? 'No records' : '';
+            return row;
+        }, {})];
+    }
+
+    return records.map((record, index) => columns.reduce((row, column) => {
+        row[column.header] = column.value(record, index);
+        return row;
+    }, {}));
+}
+
+function formatExportDate(value) {
+    if (!value) return '';
+
+    const isoDateMatch = String(value).match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const date = isoDateMatch
+        ? new Date(Number(isoDateMatch[1]), Number(isoDateMatch[2]) - 1, Number(isoDateMatch[3]))
+        : new Date(value);
+
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
+}
+
+function applyExcelLayout(worksheet, rowCount, columns) {
+    const lastColumn = columns.length - 1;
+    const lastRow = rowCount;
+
+    worksheet['!cols'] = columns.map(column => ({ wch: column.width }));
+    worksheet['!autofilter'] = {
+        ref: XLSX.utils.encode_range({ s: { r: 0, c: 0 }, e: { r: lastRow, c: lastColumn } })
+    };
+
+    styleExcelWorksheet(worksheet, rowCount + 1, columns);
+}
+
+// Helper function to style Excel worksheet
+function styleExcelWorksheet(worksheet, rows, columns = []) {
+    const worksheetColumns = Array.isArray(columns) ? columns : [];
+    const columnCount = worksheetColumns.length || XLSX.utils.decode_range(worksheet['!ref']).e.c + 1;
+
+    // Header row styling
+    for (let col = 0; col < columnCount; col++) {
+        const cellAddress = XLSX.utils.encode_col(col) + '1';
+        if (worksheet[cellAddress]) {
+            worksheet[cellAddress].s = {
+                fill: { fgColor: { rgb: 'FF0056B3' } },
+                font: { bold: true, color: { rgb: 'FFFFFFFF' }, size: 11 },
+                alignment: { horizontal: 'center', vertical: 'center', wrapText: true }
+            };
+        }
+    }
+    
+    // Data rows styling
+    for (let row = 2; row <= rows; row++) {
+        for (let col = 0; col < columnCount; col++) {
+            const cellAddress = XLSX.utils.encode_col(col) + row;
+            if (worksheet[cellAddress]) {
+                worksheet[cellAddress].s = {
+                    alignment: {
+                        horizontal: worksheetColumns[col]?.align || (col === 0 ? 'center' : 'left'),
+                        vertical: 'center',
+                        wrapText: true
+                    },
+                    border: {
+                        top: { style: 'thin', color: { rgb: 'FFD3D3D3' } },
+                        bottom: { style: 'thin', color: { rgb: 'FFD3D3D3' } },
+                        left: { style: 'thin', color: { rgb: 'FFD3D3D3' } },
+                        right: { style: 'thin', color: { rgb: 'FFD3D3D3' } }
+                    }
+                };
+            }
+        }
+    }
+}
+
+// Export to PDF
 function exportToPdf() {
-    alert('PDF export feature requires an additional library like jsPDF. Coming soon!');
+    try {
+        if (typeof html2pdf === 'undefined') {
+            alert('PDF export library not loaded. Please check your internet connection.');
+            return;
+        }
+
+        const report = buildPdfReport();
+        document.body.appendChild(report);
+
+        const filename = `material-tracker-${new Date().toISOString().slice(0, 10)}.pdf`;
+        const options = {
+            margin: 8,
+            filename,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2, useCORS: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        };
+
+        html2pdf().set(options).from(report).save()
+            .then(() => {
+                report.remove();
+            })
+            .catch(error => {
+                report.remove();
+                console.error('Error exporting to PDF:', error);
+                alert('Error exporting to PDF: ' + error.message);
+            });
+    } catch (error) {
+        console.error('Error exporting to PDF:', error);
+        alert('Error exporting to PDF: ' + error.message);
+    }
 }
 
 // Export to CSV
 function exportToCsv() {
     try {
-        let csv = 'INCOME\nDate,Amount,Description\n';
-        trackerData.income.forEach(r => {
-            csv += `${r.date},${r.amount},"${r.description}"\n`;
-        });
+        const csv = getExportSections().map(section => {
+            const headerRow = section.columns.map(column => column.header);
+            const dataRows = buildExportRows(section.records, section.columns).map(row => (
+                section.columns.map(column => row[column.header])
+            ));
+
+            return [
+                [section.name],
+                headerRow,
+                ...dataRows
+            ].map(row => row.map(escapeCsvValue).join(',')).join('\r\n');
+        }).join('\r\n\r\n');
         
-        csv += '\n\nOUTGOING\nDate,Amount,Description\n';
-        trackerData.outgoing.forEach(r => {
-            csv += `${r.date},${r.amount},"${r.description}"\n`;
-        });
-        
-        csv += '\n\nHANDOVER\nDate,Amount,Recipient,Notes,Status\n';
-        trackerData.handover.forEach(r => {
-            csv += `${r.date},${r.amount},"${r.recipient}","${r.notes}",${r.status}\n`;
-        });
-        
-        const blob = new Blob([csv], { type: 'text/csv' });
+        const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'material-tracker.csv';
+        a.download = `material-tracker-${new Date().toISOString().slice(0, 10)}.csv`;
+        document.body.appendChild(a);
         a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
         alert('CSV file exported successfully!');
     } catch (error) {
+        console.error('Error exporting to CSV:', error);
         alert('Error exporting to CSV: ' + error.message);
     }
+}
+
+function escapeCsvValue(value) {
+    const text = value === null || value === undefined ? '' : String(value);
+    return /[",\r\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function buildPdfReport() {
+    const report = document.createElement('div');
+    report.className = 'export-pdf-report';
+    report.innerHTML = `
+        <style>
+            .export-pdf-report {
+                color: #1f2937;
+                font-family: Arial, sans-serif;
+                width: 1120px;
+                padding: 16px;
+                background: #ffffff;
+            }
+            .export-pdf-header {
+                border-bottom: 2px solid #0056b3;
+                margin-bottom: 16px;
+                padding-bottom: 10px;
+            }
+            .export-pdf-header h1 {
+                color: #0056b3;
+                font-size: 22px;
+                margin: 0 0 4px;
+            }
+            .export-pdf-header p {
+                color: #4b5563;
+                font-size: 11px;
+                margin: 0;
+            }
+            .export-pdf-section {
+                margin-bottom: 18px;
+                page-break-inside: avoid;
+            }
+            .export-pdf-section h2 {
+                color: #111827;
+                font-size: 15px;
+                margin: 0 0 8px;
+            }
+            .export-pdf-table {
+                border-collapse: collapse;
+                font-size: 9px;
+                table-layout: fixed;
+                width: 100%;
+            }
+            .export-pdf-table th {
+                background: #0056b3;
+                border: 1px solid #0f4f9c;
+                color: #ffffff;
+                font-weight: 700;
+                padding: 6px 4px;
+                text-align: center;
+                vertical-align: middle;
+            }
+            .export-pdf-table td {
+                border: 1px solid #d1d5db;
+                padding: 5px 4px;
+                vertical-align: top;
+                word-break: break-word;
+            }
+            .export-pdf-table tbody tr:nth-child(even) td {
+                background: #f8fafc;
+            }
+            .align-center { text-align: center; }
+            .align-left { text-align: left; }
+            .align-right { text-align: right; }
+        </style>
+        <div class="export-pdf-header">
+            <h1>Material Tracker Export</h1>
+            <p>Generated on ${escapeHtml(new Date().toLocaleString())}</p>
+        </div>
+        ${getExportSections().map(section => buildPdfSection(section)).join('')}
+    `;
+
+    return report;
+}
+
+function buildPdfSection(section) {
+    const rows = buildExportRows(section.records, section.columns);
+    const headerCells = section.columns.map(column => (
+        `<th style="width:${column.width * 7}px">${escapeHtml(column.header)}</th>`
+    )).join('');
+
+    const bodyRows = rows.map(row => `
+        <tr>
+            ${section.columns.map(column => `
+                <td class="align-${column.align}">${escapeHtml(row[column.header])}</td>
+            `).join('')}
+        </tr>
+    `).join('');
+
+    return `
+        <section class="export-pdf-section">
+            <h2>${escapeHtml(section.name)}</h2>
+            <table class="export-pdf-table">
+                <thead><tr>${headerCells}</tr></thead>
+                <tbody>${bodyRows}</tbody>
+            </table>
+        </section>
+    `;
+}
+
+function escapeHtml(value) {
+    return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Save data to localStorage
