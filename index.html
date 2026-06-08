@@ -146,9 +146,32 @@
                             <h5>Income Records</h5>
                         </div>
                         <div class="card-body">
+                            <div class="record-toolbar mb-3">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-5">
+                                        <label for="incomeFilterMaterial" class="form-label">Material Name</label>
+                                        <input type="search" class="form-control" id="incomeFilterMaterial" placeholder="Search material">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="incomeFilterDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="incomeFilterDate">
+                                    </div>
+                                    <div class="col-md-3 d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-secondary w-50" id="incomeClearFilters">Clear</button>
+                                        <button type="button" class="btn btn-danger w-50" id="incomeBulkDelete" disabled>Delete</button>
+                                    </div>
+                                </div>
+                                <div class="record-toolbar-summary mt-2">
+                                    <span id="incomeFilterCount">Showing 0 of 0</span>
+                                    <span id="incomeSelectedCount">0 selected</span>
+                                </div>
+                            </div>
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
+                                        <th class="selection-column">
+                                            <input type="checkbox" class="form-check-input" id="incomeSelectAll" title="Select visible income records">
+                                        </th>
                                         <th>Material Name</th>
                                         <th>Qty</th>
                                         <th>Amount</th>
@@ -159,7 +182,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="6" class="text-muted text-center">No records yet</td>
+                                        <td colspan="7" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -221,9 +244,32 @@
                             <h5>Outgoing Records</h5>
                         </div>
                         <div class="card-body">
+                            <div class="record-toolbar mb-3">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-5">
+                                        <label for="outgoingFilterMaterial" class="form-label">Material Name</label>
+                                        <input type="search" class="form-control" id="outgoingFilterMaterial" placeholder="Search material">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="outgoingFilterDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="outgoingFilterDate">
+                                    </div>
+                                    <div class="col-md-3 d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-secondary w-50" id="outgoingClearFilters">Clear</button>
+                                        <button type="button" class="btn btn-danger w-50" id="outgoingBulkDelete" disabled>Delete</button>
+                                    </div>
+                                </div>
+                                <div class="record-toolbar-summary mt-2">
+                                    <span id="outgoingFilterCount">Showing 0 of 0</span>
+                                    <span id="outgoingSelectedCount">0 selected</span>
+                                </div>
+                            </div>
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
+                                        <th class="selection-column">
+                                            <input type="checkbox" class="form-check-input" id="outgoingSelectAll" title="Select visible outgoing records">
+                                        </th>
                                         <th>Material Name</th>
                                         <th>Qty</th>
                                         <th>Amount</th>
@@ -234,7 +280,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="6" class="text-muted text-center">No records yet</td>
+                                        <td colspan="7" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -310,9 +356,36 @@
                             <h5>Handover Records</h5>
                         </div>
                         <div class="card-body">
+                            <div class="record-toolbar mb-3">
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <label for="handoverFilterMaterial" class="form-label">Material Name</label>
+                                        <input type="search" class="form-control" id="handoverFilterMaterial" placeholder="Search material">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="handoverFilterPerson" class="form-label">Handover Person</label>
+                                        <input type="search" class="form-control" id="handoverFilterPerson" placeholder="Search person">
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label for="handoverFilterDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="handoverFilterDate">
+                                    </div>
+                                    <div class="col-md-3 d-flex gap-2">
+                                        <button type="button" class="btn btn-outline-secondary w-50" id="handoverClearFilters">Clear</button>
+                                        <button type="button" class="btn btn-danger w-50" id="handoverBulkDelete" disabled>Delete</button>
+                                    </div>
+                                </div>
+                                <div class="record-toolbar-summary mt-2">
+                                    <span id="handoverFilterCount">Showing 0 of 0</span>
+                                    <span id="handoverSelectedCount">0 selected</span>
+                                </div>
+                            </div>
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
+                                        <th class="selection-column">
+                                            <input type="checkbox" class="form-check-input" id="handoverSelectAll" title="Select visible handover records">
+                                        </th>
                                         <th>Material Name</th>
                                         <th>Qty</th>
                                         <th>Amount</th>
@@ -325,7 +398,7 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="8" class="text-muted text-center">No records yet</td>
+                                        <td colspan="9" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>

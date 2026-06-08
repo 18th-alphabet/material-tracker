@@ -11,6 +11,18 @@ let editingId = null;
 let editingType = null;
 let currentTheme = localStorage.getItem('theme') || 'light';
 
+const recordFilters = {
+    income: { materialName: '', date: '', handoverPerson: '' },
+    outgoing: { materialName: '', date: '', handoverPerson: '' },
+    handover: { materialName: '', date: '', handoverPerson: '' }
+};
+
+const selectedRecords = {
+    income: new Set(),
+    outgoing: new Set(),
+    handover: new Set()
+};
+
 const TRANSACTION_EXPORT_COLUMNS = [
     { header: 'No', width: 5, align: 'center', value: (record, index) => index + 1 },
     { header: 'Material Name', width: 24, align: 'left', value: record => record.materialName || '' },
@@ -104,6 +116,33 @@ function setupEventListeners() {
     document.getElementById('exportExcel')?.addEventListener('click', exportToExcel);
     document.getElementById('exportPdf')?.addEventListener('click', exportToPdf);
     document.getElementById('exportCsv')?.addEventListener('click', exportToCsv);
+
+    setupRecordControls('income');
+    setupRecordControls('outgoing');
+    setupRecordControls('handover');
+}
+
+function setupRecordControls(type) {
+    bindFilterInput(`${type}FilterMaterial`, type, 'materialName');
+    bindFilterInput(`${type}FilterDate`, type, 'date');
+    bindFilterInput(`${type}FilterPerson`, type, 'handoverPerson');
+
+    document.getElementById(`${type}ClearFilters`)?.addEventListener('click', () => clearRecordFilters(type));
+    document.getElementById(`${type}BulkDelete`)?.addEventListener('click', () => deleteSelectedRecords(type));
+    document.getElementById(`${type}SelectAll`)?.addEventListener('change', event => {
+        setVisibleSelection(type, event.target.checked);
+    });
+}
+
+function bindFilterInput(inputId, type, key) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+
+    input.addEventListener('input', () => {
+        recordFilters[type][key] = input.value.trim();
+        selectedRecords[type].clear();
+        updateRecordTable(type);
+    });
 }
 
 // Handle income form submission
@@ -268,19 +307,30 @@ function handleHandoverSubmit(e) {
 function updateIncomeTable() {
     const tbody = document.querySelector('#income tbody');
     if (!tbody) return;
+    const records = getFilteredRecords('income');
     
     if (trackerData.income.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No records yet</td></tr>';
+        updateSelectionControls('income', records);
+        return;
+    }
+
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No matching records</td></tr>';
+        updateSelectionControls('income', records);
         return;
     }
     
-    tbody.innerHTML = trackerData.income.map(record => `
+    tbody.innerHTML = records.map(record => `
         <tr>
-            <td title="${record.materialName}">${record.materialName}</td>
-            <td>${record.qty}</td>
-            <td class="text-success fw-bold">$${record.amount.toFixed(2)}</td>
-            <td>${record.serialNo || '-'}</td>
-            <td>${new Date(record.date).toLocaleDateString()}</td>
+            <td class="selection-column">
+                <input type="checkbox" class="form-check-input record-select" value="${escapeAttribute(record.id)}" ${selectedRecords.income.has(String(record.id)) ? 'checked' : ''} onchange="toggleRecordSelection('income', this.value, this.checked)">
+            </td>
+            <td title="${escapeAttribute(record.materialName)}">${escapeHtml(record.materialName)}</td>
+            <td>${escapeHtml(record.qty)}</td>
+            <td class="text-success fw-bold">$${Number(record.amount || 0).toFixed(2)}</td>
+            <td>${escapeHtml(record.serialNo || '-')}</td>
+            <td>${escapeHtml(formatDisplayDate(record.date))}</td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editIncome(${record.id})">
                     <i class="bi bi-pencil"></i>
@@ -291,25 +341,38 @@ function updateIncomeTable() {
             </td>
         </tr>
     `).join('');
+
+    updateSelectionControls('income', records);
 }
 
 // Update outgoing table with delete/edit buttons
 function updateOutgoingTable() {
     const tbody = document.querySelector('#outgoing tbody');
     if (!tbody) return;
+    const records = getFilteredRecords('outgoing');
     
     if (trackerData.outgoing.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No records yet</td></tr>';
+        updateSelectionControls('outgoing', records);
+        return;
+    }
+
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-muted text-center">No matching records</td></tr>';
+        updateSelectionControls('outgoing', records);
         return;
     }
     
-    tbody.innerHTML = trackerData.outgoing.map(record => `
+    tbody.innerHTML = records.map(record => `
         <tr>
-            <td title="${record.materialName}">${record.materialName}</td>
-            <td>${record.qty}</td>
-            <td class="text-danger fw-bold">$${record.amount.toFixed(2)}</td>
-            <td>${record.serialNo || '-'}</td>
-            <td>${new Date(record.date).toLocaleDateString()}</td>
+            <td class="selection-column">
+                <input type="checkbox" class="form-check-input record-select" value="${escapeAttribute(record.id)}" ${selectedRecords.outgoing.has(String(record.id)) ? 'checked' : ''} onchange="toggleRecordSelection('outgoing', this.value, this.checked)">
+            </td>
+            <td title="${escapeAttribute(record.materialName)}">${escapeHtml(record.materialName)}</td>
+            <td>${escapeHtml(record.qty)}</td>
+            <td class="text-danger fw-bold">$${Number(record.amount || 0).toFixed(2)}</td>
+            <td>${escapeHtml(record.serialNo || '-')}</td>
+            <td>${escapeHtml(formatDisplayDate(record.date))}</td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editOutgoing(${record.id})">
                     <i class="bi bi-pencil"></i>
@@ -320,27 +383,40 @@ function updateOutgoingTable() {
             </td>
         </tr>
     `).join('');
+
+    updateSelectionControls('outgoing', records);
 }
 
 // Update handover table with delete/edit buttons
 function updateHandoverTable() {
     const tbody = document.querySelector('#handover tbody');
     if (!tbody) return;
+    const records = getFilteredRecords('handover');
     
     if (trackerData.handover.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" class="text-muted text-center">No records yet</td></tr>';
+        updateSelectionControls('handover', records);
+        return;
+    }
+
+    if (records.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-muted text-center">No matching records</td></tr>';
+        updateSelectionControls('handover', records);
         return;
     }
     
-    tbody.innerHTML = trackerData.handover.map(record => `
+    tbody.innerHTML = records.map(record => `
         <tr>
-            <td title="${record.materialName}">${record.materialName}</td>
-            <td>${record.qty}</td>
-            <td class="text-primary fw-bold">$${record.amount.toFixed(2)}</td>
-            <td>${record.handoverPerson}</td>
-            <td>${record.handoverBy}</td>
-            <td>${new Date(record.date).toLocaleDateString()}</td>
-            <td><span class="badge bg-warning">${record.status}</span></td>
+            <td class="selection-column">
+                <input type="checkbox" class="form-check-input record-select" value="${escapeAttribute(record.id)}" ${selectedRecords.handover.has(String(record.id)) ? 'checked' : ''} onchange="toggleRecordSelection('handover', this.value, this.checked)">
+            </td>
+            <td title="${escapeAttribute(record.materialName)}">${escapeHtml(record.materialName)}</td>
+            <td>${escapeHtml(record.qty)}</td>
+            <td class="text-primary fw-bold">$${Number(record.amount || 0).toFixed(2)}</td>
+            <td>${escapeHtml(record.handoverPerson)}</td>
+            <td>${escapeHtml(record.handoverBy)}</td>
+            <td>${escapeHtml(formatDisplayDate(record.date))}</td>
+            <td><span class="badge bg-warning">${escapeHtml(record.status)}</span></td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editHandover(${record.id})" title="Edit">
                     <i class="bi bi-pencil"></i>
@@ -351,6 +427,139 @@ function updateHandoverTable() {
             </td>
         </tr>
     `).join('');
+
+    updateSelectionControls('handover', records);
+}
+
+function updateRecordTable(type) {
+    const updaters = {
+        income: updateIncomeTable,
+        outgoing: updateOutgoingTable,
+        handover: updateHandoverTable
+    };
+
+    updaters[type]?.();
+}
+
+function getFilteredRecords(type) {
+    const records = trackerData[type] || [];
+    const filters = recordFilters[type];
+    const materialName = filters.materialName.toLowerCase();
+    const handoverPerson = filters.handoverPerson.toLowerCase();
+
+    return records.filter(record => {
+        const materialMatches = !materialName || String(record.materialName || '').toLowerCase().includes(materialName);
+        const dateMatches = !filters.date || record.date === filters.date;
+        const personMatches = !handoverPerson || String(record.handoverPerson || '').toLowerCase().includes(handoverPerson);
+
+        return materialMatches && dateMatches && personMatches;
+    });
+}
+
+function toggleRecordSelection(type, id, checked) {
+    if (!selectedRecords[type]) return;
+
+    if (checked) {
+        selectedRecords[type].add(String(id));
+    } else {
+        selectedRecords[type].delete(String(id));
+    }
+
+    updateSelectionControls(type, getFilteredRecords(type));
+}
+
+function setVisibleSelection(type, checked) {
+    const records = getFilteredRecords(type);
+    const selection = selectedRecords[type];
+    if (!selection) return;
+
+    selection.clear();
+    if (checked) {
+        records.forEach(record => selection.add(String(record.id)));
+    }
+
+    updateRecordTable(type);
+}
+
+function updateSelectionControls(type, visibleRecords) {
+    const visibleIds = new Set(visibleRecords.map(record => String(record.id)));
+    const selection = selectedRecords[type];
+    if (!selection) return;
+
+    Array.from(selection).forEach(id => {
+        if (!visibleIds.has(id)) selection.delete(id);
+    });
+
+    const selectedCount = selection.size;
+    const totalCount = (trackerData[type] || []).length;
+    const filterCount = document.getElementById(`${type}FilterCount`);
+    const selectedCountLabel = document.getElementById(`${type}SelectedCount`);
+    const bulkDeleteButton = document.getElementById(`${type}BulkDelete`);
+    const selectAll = document.getElementById(`${type}SelectAll`);
+
+    if (filterCount) {
+        filterCount.textContent = `Showing ${visibleRecords.length} of ${totalCount}`;
+    }
+
+    if (selectedCountLabel) {
+        selectedCountLabel.textContent = `${selectedCount} selected`;
+    }
+
+    if (bulkDeleteButton) {
+        bulkDeleteButton.disabled = selectedCount === 0;
+    }
+
+    if (selectAll) {
+        selectAll.checked = visibleRecords.length > 0 && selectedCount === visibleRecords.length;
+        selectAll.indeterminate = selectedCount > 0 && selectedCount < visibleRecords.length;
+        selectAll.disabled = visibleRecords.length === 0;
+    }
+}
+
+function clearRecordFilters(type) {
+    ['Material', 'Date', 'Person'].forEach(filterName => {
+        const input = document.getElementById(`${type}Filter${filterName}`);
+        if (input) input.value = '';
+    });
+
+    recordFilters[type] = { materialName: '', date: '', handoverPerson: '' };
+    selectedRecords[type].clear();
+    updateRecordTable(type);
+}
+
+function deleteSelectedRecords(type) {
+    const selection = selectedRecords[type];
+    if (!selection || selection.size === 0) return;
+
+    const label = getRecordTypeLabel(type);
+    const count = selection.size;
+    const plural = count === 1 ? 'record' : 'records';
+
+    if (!confirm(`Delete ${count} selected ${label} ${plural}? This cannot be undone.`)) {
+        return;
+    }
+
+    trackerData[type] = trackerData[type].filter(record => !selection.has(String(record.id)));
+    selection.clear();
+    updateRecordTable(type);
+    updateDashboard();
+    saveData();
+    alert(`${count} ${label} ${plural} deleted successfully!`);
+}
+
+function getRecordTypeLabel(type) {
+    return {
+        income: 'income',
+        outgoing: 'outgoing',
+        handover: 'handover'
+    }[type] || 'record';
+}
+
+function formatDisplayDate(value) {
+    if (!value) return '';
+
+    const date = new Date(`${value}T00:00:00`);
+    return Number.isNaN(date.getTime()) ? value : date.toLocaleDateString();
 }
 
 // ============================================
@@ -956,6 +1165,10 @@ function escapeHtml(value) {
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value);
 }
 
 // Save data to localStorage
