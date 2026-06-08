@@ -58,6 +58,103 @@ body {
 }
 
 /* ============================================
+   SITE HEADER
+   ============================================ */
+.site-header {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    color: white;
+    padding: 25px 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-bottom: 3px solid #004085;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: transform 0.3s ease;
+}
+
+.header-title h1:hover {
+    transform: scale(1.02);
+}
+
+.header-title h1 i {
+    font-size: 2.2rem;
+}
+
+.header-subtitle {
+    margin: 5px 0 0 0;
+    font-size: 0.9rem;
+    opacity: 0.95;
+    font-weight: 300;
+    letter-spacing: 0.5px;
+}
+
+.header-links {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.header-link {
+    color: white;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.header-link:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    text-decoration: none;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .site-header {
+        padding: 15px 0;
+    }
+
+    .header-content {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .header-title h1 {
+        font-size: 1.5rem;
+    }
+
+    .header-subtitle {
+        font-size: 0.8rem;
+    }
+
+    .header-links {
+        gap: 15px;
+    }
+
+    .header-link {
+        font-size: 1.2rem;
+    }
+}
+
+/* ============================================
    NAVBAR & HEADER
    ============================================ */
 .navbar {

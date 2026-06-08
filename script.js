@@ -87,20 +87,26 @@ function setupEventListeners() {
 // Handle income form submission
 function handleIncomeSubmit(e) {
     e.preventDefault();
-    const date = document.getElementById('incomeDate').value;
+    const materialName = document.getElementById('incomeMaterialName').value;
+    const qty = parseFloat(document.getElementById('incomeQty').value);
     const amount = parseFloat(document.getElementById('incomeAmount').value);
-    const description = document.getElementById('incomeDescription').value;
+    const serialNo = document.getElementById('incomeSerialNo').value;
+    const date = document.getElementById('incomeDate').value;
+    const comments = document.getElementById('incomeComments').value;
     
-    if (date && amount) {
+    if (materialName && qty && amount && date) {
         if (editingId) {
             // Update existing record
             const index = trackerData.income.findIndex(r => r.id === editingId);
             if (index !== -1) {
                 trackerData.income[index] = { 
                     id: editingId, 
-                    date, 
-                    amount, 
-                    description 
+                    materialName,
+                    qty,
+                    amount,
+                    serialNo,
+                    date,
+                    comments
                 };
                 editingId = null;
                 document.querySelector('#incomeForm button').textContent = 'Add Income';
@@ -109,9 +115,12 @@ function handleIncomeSubmit(e) {
             // Add new record
             const newRecord = {
                 id: Date.now() + Math.random(),
-                date,
+                materialName,
+                qty,
                 amount,
-                description
+                serialNo,
+                date,
+                comments
             };
             trackerData.income.push(newRecord);
         }
@@ -127,20 +136,26 @@ function handleIncomeSubmit(e) {
 // Handle outgoing form submission
 function handleOutgoingSubmit(e) {
     e.preventDefault();
-    const date = document.getElementById('outgoingDate').value;
+    const materialName = document.getElementById('outgoingMaterialName').value;
+    const qty = parseFloat(document.getElementById('outgoingQty').value);
     const amount = parseFloat(document.getElementById('outgoingAmount').value);
-    const description = document.getElementById('outgoingDescription').value;
+    const serialNo = document.getElementById('outgoingSerialNo').value;
+    const date = document.getElementById('outgoingDate').value;
+    const comments = document.getElementById('outgoingComments').value;
     
-    if (date && amount) {
+    if (materialName && qty && amount && date) {
         if (editingId) {
             // Update existing record
             const index = trackerData.outgoing.findIndex(r => r.id === editingId);
             if (index !== -1) {
                 trackerData.outgoing[index] = { 
                     id: editingId, 
-                    date, 
-                    amount, 
-                    description 
+                    materialName,
+                    qty,
+                    amount,
+                    serialNo,
+                    date,
+                    comments
                 };
                 editingId = null;
                 document.querySelector('#outgoingForm button').textContent = 'Add Outgoing';
@@ -149,9 +164,12 @@ function handleOutgoingSubmit(e) {
             // Add new record
             const newRecord = {
                 id: Date.now() + Math.random(),
-                date,
+                materialName,
+                qty,
                 amount,
-                description
+                serialNo,
+                date,
+                comments
             };
             trackerData.outgoing.push(newRecord);
         }
@@ -167,23 +185,33 @@ function handleOutgoingSubmit(e) {
 // Handle handover form submission
 function handleHandoverSubmit(e) {
     e.preventDefault();
-    const date = document.getElementById('handoverDate').value;
+    const materialName = document.getElementById('handoverMaterialName').value;
+    const qty = parseFloat(document.getElementById('handoverQty').value);
     const amount = parseFloat(document.getElementById('handoverAmount').value);
-    const recipient = document.getElementById('handoverRecipient').value;
-    const notes = document.getElementById('handoverNotes').value;
+    const serialNo = document.getElementById('handoverSerialNo').value;
+    const date = document.getElementById('handoverDate').value;
+    const handoverPerson = document.getElementById('handoverPerson').value;
+    const handoverBy = document.getElementById('handoverBy').value;
+    const handoverDetails = document.getElementById('handoverDetails').value;
+    const comments = document.getElementById('handoverComments').value;
     
-    if (date && amount && recipient) {
+    if (materialName && qty && amount && date && handoverPerson && handoverBy) {
         if (editingId) {
             // Update existing record
             const index = trackerData.handover.findIndex(r => r.id === editingId);
             if (index !== -1) {
                 trackerData.handover[index] = { 
-                    id: editingId, 
-                    date, 
-                    amount, 
-                    recipient, 
-                    notes, 
-                    status: trackerData.handover[index].status 
+                    id: editingId,
+                    materialName,
+                    qty,
+                    amount,
+                    serialNo,
+                    date,
+                    handoverPerson,
+                    handoverBy,
+                    handoverDetails,
+                    comments,
+                    status: trackerData.handover[index].status
                 };
                 editingId = null;
                 document.querySelector('#handoverForm button').textContent = 'Create Handover';
@@ -192,10 +220,15 @@ function handleHandoverSubmit(e) {
             // Add new record
             const newRecord = {
                 id: Date.now() + Math.random(),
-                date,
+                materialName,
+                qty,
                 amount,
-                recipient,
-                notes,
+                serialNo,
+                date,
+                handoverPerson,
+                handoverBy,
+                handoverDetails,
+                comments,
                 status: 'Pending'
             };
             trackerData.handover.push(newRecord);
@@ -215,21 +248,23 @@ function updateIncomeTable() {
     if (!tbody) return;
     
     if (trackerData.income.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No records yet</td></tr>';
         return;
     }
     
     tbody.innerHTML = trackerData.income.map(record => `
         <tr>
+            <td title="${record.materialName}">${record.materialName}</td>
+            <td>${record.qty}</td>
+            <td class="text-success fw-bold">$${record.amount.toFixed(2)}</td>
+            <td>${record.serialNo || '-'}</td>
             <td>${new Date(record.date).toLocaleDateString()}</td>
-            <td class="text-success fw-bold">+$${record.amount.toFixed(2)}</td>
-            <td>${record.description || '-'}</td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editIncome(${record.id})">
-                    <i class="bi bi-pencil"></i> Edit
+                    <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-danger" onclick="deleteIncome(${record.id})">
-                    <i class="bi bi-trash"></i> Delete
+                    <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
@@ -242,21 +277,23 @@ function updateOutgoingTable() {
     if (!tbody) return;
     
     if (trackerData.outgoing.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="6" class="text-muted text-center">No records yet</td></tr>';
         return;
     }
     
     tbody.innerHTML = trackerData.outgoing.map(record => `
         <tr>
+            <td title="${record.materialName}">${record.materialName}</td>
+            <td>${record.qty}</td>
+            <td class="text-danger fw-bold">$${record.amount.toFixed(2)}</td>
+            <td>${record.serialNo || '-'}</td>
             <td>${new Date(record.date).toLocaleDateString()}</td>
-            <td class="text-danger fw-bold">-$${record.amount.toFixed(2)}</td>
-            <td>${record.description || '-'}</td>
             <td>
                 <button class="btn btn-sm btn-warning me-1" onclick="editOutgoing(${record.id})">
-                    <i class="bi bi-pencil"></i> Edit
+                    <i class="bi bi-pencil"></i>
                 </button>
                 <button class="btn btn-sm btn-danger" onclick="deleteOutgoing(${record.id})">
-                    <i class="bi bi-trash"></i> Delete
+                    <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
@@ -269,22 +306,25 @@ function updateHandoverTable() {
     if (!tbody) return;
     
     if (trackerData.handover.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-muted text-center">No records yet</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-muted text-center">No records yet</td></tr>';
         return;
     }
     
     tbody.innerHTML = trackerData.handover.map(record => `
         <tr>
-            <td>${new Date(record.date).toLocaleDateString()}</td>
+            <td title="${record.materialName}">${record.materialName}</td>
+            <td>${record.qty}</td>
             <td class="text-primary fw-bold">$${record.amount.toFixed(2)}</td>
-            <td>${record.recipient}</td>
+            <td>${record.handoverPerson}</td>
+            <td>${record.handoverBy}</td>
+            <td>${new Date(record.date).toLocaleDateString()}</td>
             <td><span class="badge bg-warning">${record.status}</span></td>
             <td>
-                <button class="btn btn-sm btn-warning me-1" onclick="editHandover(${record.id})">
-                    <i class="bi bi-pencil"></i> Edit
+                <button class="btn btn-sm btn-warning me-1" onclick="editHandover(${record.id})" title="Edit">
+                    <i class="bi bi-pencil"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteHandover(${record.id})">
-                    <i class="bi bi-trash"></i> Delete
+                <button class="btn btn-sm btn-danger" onclick="deleteHandover(${record.id})" title="Delete">
+                    <i class="bi bi-trash"></i>
                 </button>
             </td>
         </tr>
@@ -336,9 +376,12 @@ function deleteHandover(id) {
 function editIncome(id) {
     const record = trackerData.income.find(r => r.id === id);
     if (record) {
-        document.getElementById('incomeDate').value = record.date;
+        document.getElementById('incomeMaterialName').value = record.materialName;
+        document.getElementById('incomeQty').value = record.qty;
         document.getElementById('incomeAmount').value = record.amount;
-        document.getElementById('incomeDescription').value = record.description;
+        document.getElementById('incomeSerialNo').value = record.serialNo || '';
+        document.getElementById('incomeDate').value = record.date;
+        document.getElementById('incomeComments').value = record.comments || '';
         document.querySelector('#incomeForm button').textContent = 'Update Income';
         editingId = id;
         editingType = 'income';
@@ -350,9 +393,12 @@ function editIncome(id) {
 function editOutgoing(id) {
     const record = trackerData.outgoing.find(r => r.id === id);
     if (record) {
-        document.getElementById('outgoingDate').value = record.date;
+        document.getElementById('outgoingMaterialName').value = record.materialName;
+        document.getElementById('outgoingQty').value = record.qty;
         document.getElementById('outgoingAmount').value = record.amount;
-        document.getElementById('outgoingDescription').value = record.description;
+        document.getElementById('outgoingSerialNo').value = record.serialNo || '';
+        document.getElementById('outgoingDate').value = record.date;
+        document.getElementById('outgoingComments').value = record.comments || '';
         document.querySelector('#outgoingForm button').textContent = 'Update Outgoing';
         editingId = id;
         editingType = 'outgoing';
@@ -364,10 +410,15 @@ function editOutgoing(id) {
 function editHandover(id) {
     const record = trackerData.handover.find(r => r.id === id);
     if (record) {
-        document.getElementById('handoverDate').value = record.date;
+        document.getElementById('handoverMaterialName').value = record.materialName;
+        document.getElementById('handoverQty').value = record.qty;
         document.getElementById('handoverAmount').value = record.amount;
-        document.getElementById('handoverRecipient').value = record.recipient;
-        document.getElementById('handoverNotes').value = record.notes;
+        document.getElementById('handoverSerialNo').value = record.serialNo || '';
+        document.getElementById('handoverDate').value = record.date;
+        document.getElementById('handoverPerson').value = record.handoverPerson;
+        document.getElementById('handoverBy').value = record.handoverBy;
+        document.getElementById('handoverDetails').value = record.handoverDetails || '';
+        document.getElementById('handoverComments').value = record.comments || '';
         document.querySelector('#handoverForm button').textContent = 'Update Handover';
         editingId = id;
         editingType = 'handover';

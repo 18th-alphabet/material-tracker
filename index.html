@@ -16,6 +16,24 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
 <body>
+    <!-- Site Header -->
+    <header class="site-header">
+        <div class="header-content">
+            <div class="header-title">
+                <h1><i class="bi bi-box-seam"></i> Material Tracker</h1>
+                <p class="header-subtitle">Professional Material Management System</p>
+            </div>
+            <div class="header-links">
+                <a href="#" class="header-link" title="Home">
+                    <i class="bi bi-house-fill"></i>
+                </a>
+                <a href="https://github.com" target="_blank" class="header-link" title="GitHub">
+                    <i class="bi bi-github"></i>
+                </a>
+            </div>
+        </div>
+    </header>
+
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
         <div class="container-fluid">
@@ -105,17 +123,33 @@
                         </div>
                         <div class="card-body">
                             <form id="incomeForm">
-                                <div class="mb-3">
-                                    <label for="incomeDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="incomeDate" required>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="incomeMaterialName" class="form-label">Material Name</label>
+                                        <input type="text" class="form-control" id="incomeMaterialName" placeholder="Enter material name" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="incomeQty" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" id="incomeQty" placeholder="0" min="0" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="incomeAmount" class="form-label">Amount</label>
+                                        <input type="number" class="form-control" id="incomeAmount" placeholder="0.00" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="incomeSerialNo" class="form-label">Serial No</label>
+                                        <input type="text" class="form-control" id="incomeSerialNo" placeholder="Enter serial number">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="incomeDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="incomeDate" required>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="incomeAmount" class="form-label">Amount</label>
-                                    <input type="number" class="form-control" id="incomeAmount" placeholder="0.00" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="incomeDescription" class="form-label">Description</label>
-                                    <input type="text" class="form-control" id="incomeDescription" placeholder="Enter description">
+                                    <label for="incomeComments" class="form-label">Comments</label>
+                                    <textarea class="form-control" id="incomeComments" rows="2" placeholder="Add any comments..."></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-success w-100">Add Income</button>
                             </form>
@@ -131,15 +165,17 @@
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
+                                        <th>Material Name</th>
+                                        <th>Qty</th>
                                         <th>Amount</th>
-                                        <th>Description</th>
+                                        <th>Serial No</th>
+                                        <th>Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="4" class="text-muted text-center">No records yet</td>
+                                        <td colspan="6" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -162,17 +198,33 @@
                         </div>
                         <div class="card-body">
                             <form id="outgoingForm">
-                                <div class="mb-3">
-                                    <label for="outgoingDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="outgoingDate" required>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="outgoingMaterialName" class="form-label">Material Name</label>
+                                        <input type="text" class="form-control" id="outgoingMaterialName" placeholder="Enter material name" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="outgoingQty" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" id="outgoingQty" placeholder="0" min="0" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="outgoingAmount" class="form-label">Amount</label>
+                                        <input type="number" class="form-control" id="outgoingAmount" placeholder="0.00" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="outgoingSerialNo" class="form-label">Serial No</label>
+                                        <input type="text" class="form-control" id="outgoingSerialNo" placeholder="Enter serial number">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="outgoingDate" class="form-label">Date</label>
+                                        <input type="date" class="form-control" id="outgoingDate" required>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="outgoingAmount" class="form-label">Amount</label>
-                                    <input type="number" class="form-control" id="outgoingAmount" placeholder="0.00" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label for="outgoingDescription" class="form-label">Description</label>
-                                    <input type="text" class="form-control" id="outgoingDescription" placeholder="Enter description">
+                                    <label for="outgoingComments" class="form-label">Comments</label>
+                                    <textarea class="form-control" id="outgoingComments" rows="2" placeholder="Add any comments..."></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-danger w-100">Add Outgoing</button>
                             </form>
@@ -188,15 +240,17 @@
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
+                                        <th>Material Name</th>
+                                        <th>Qty</th>
                                         <th>Amount</th>
-                                        <th>Description</th>
+                                        <th>Serial No</th>
+                                        <th>Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="4" class="text-muted text-center">No records yet</td>
+                                        <td colspan="6" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -219,21 +273,47 @@
                         </div>
                         <div class="card-body">
                             <form id="handoverForm">
-                                <div class="mb-3">
-                                    <label for="handoverDate" class="form-label">Date</label>
-                                    <input type="date" class="form-control" id="handoverDate" required>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="handoverMaterialName" class="form-label">Material Name</label>
+                                        <input type="text" class="form-control" id="handoverMaterialName" placeholder="Enter material name" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="handoverQty" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" id="handoverQty" placeholder="0" min="0" required>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="handoverAmount" class="form-label">Amount</label>
+                                        <input type="number" class="form-control" id="handoverAmount" placeholder="0.00" step="0.01" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="handoverSerialNo" class="form-label">Serial No</label>
+                                        <input type="text" class="form-control" id="handoverSerialNo" placeholder="Enter serial number">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="handoverDate" class="form-label">Handover Date</label>
+                                        <input type="date" class="form-control" id="handoverDate" required>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="handoverPerson" class="form-label">Handover Person</label>
+                                        <input type="text" class="form-control" id="handoverPerson" placeholder="Recipient name" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="handoverBy" class="form-label">Handover By</label>
+                                        <input type="text" class="form-control" id="handoverBy" placeholder="Your name" required>
+                                    </div>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="handoverAmount" class="form-label">Amount</label>
-                                    <input type="number" class="form-control" id="handoverAmount" placeholder="0.00" required>
+                                    <label for="handoverDetails" class="form-label">Handover Details</label>
+                                    <textarea class="form-control" id="handoverDetails" rows="2" placeholder="Enter handover details..."></textarea>
                                 </div>
                                 <div class="mb-3">
-                                    <label for="handoverRecipient" class="form-label">Recipient</label>
-                                    <input type="text" class="form-control" id="handoverRecipient" placeholder="Enter recipient name">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="handoverNotes" class="form-label">Notes</label>
-                                    <textarea class="form-control" id="handoverNotes" rows="2" placeholder="Enter notes"></textarea>
+                                    <label for="handoverComments" class="form-label">Comments</label>
+                                    <textarea class="form-control" id="handoverComments" rows="2" placeholder="Add any additional comments..."></textarea>
                                 </div>
                                 <button type="submit" class="btn btn-info w-100">Create Handover</button>
                             </form>
@@ -249,16 +329,19 @@
                             <table class="table table-sm table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>Date</th>
+                                        <th>Material Name</th>
+                                        <th>Qty</th>
                                         <th>Amount</th>
-                                        <th>Recipient</th>
+                                        <th>Person</th>
+                                        <th>By</th>
+                                        <th>Date</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td colspan="5" class="text-muted text-center">No records yet</td>
+                                        <td colspan="8" class="text-muted text-center">No records yet</td>
                                     </tr>
                                 </tbody>
                             </table>
